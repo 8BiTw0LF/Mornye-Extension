@@ -2255,6 +2255,13 @@ function searchTracksWithFallback(query, limit, selectMatch) {
   return [];
 }
 
+function albumSearchTitle(value) {
+  return String(value || "").replace(
+    /\s*[(\[](?:original\s+)?(?:(?:motion\s+picture|movie|film|television|tv|video\s+game)\s+)?soundtrack[)\]]\s*$/i,
+    ""
+  ).trim();
+}
+
 function findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs, albumName) {
   var queries = [];
   var seen = {};
@@ -2300,6 +2307,10 @@ function findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs
       if (albumArtists.length > 1) albumQueries.push(albumTitle + " " + albumArtists[0]);
     }
     albumQueries.push(albumTitle);
+    // Catalogs can omit an Apple soundtrack annotation from the same album.
+    // Only broaden the search query; every recovered track is still verified.
+    var searchTitle = albumSearchTitle(albumTitle);
+    if (searchTitle && searchTitle !== albumTitle) albumQueries.push(searchTitle);
     for (var queryIndex = 0; queryIndex < albumQueries.length; queryIndex++) {
       if (ensureNotCancelled()) throw new Error("download cancelled");
       try {

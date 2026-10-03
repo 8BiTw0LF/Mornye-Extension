@@ -390,6 +390,54 @@ test('album recovery handles featured artists without weakening track validation
   assert.equal(c.checkAvailability('', 'Dil', 'Someone Else', options(192006)).available, false);
 });
 
+test('album recovery retries a soundtrack title without its catalog annotation', () => {
+  const c = runtime();
+  sources(c, () => []);
+  const queries = [];
+  c.searchAlbumsViaAPI = (query, limit) => {
+    queries.push([query, limit]);
+    return query === 'Collection' ? [{ id: 'soundtrack' }] : [];
+  };
+  c.fetchAlbumRaw = id => ({ id, tracks: { items: [
+    track('1', { performer: { name: 'Artist, Guest' }, duration: 197 }),
+    track('2', { title: 'Another Signal', isrc: 'USAAA0000002', duration: 239 }),
+  ] } });
+  const album = 'Collection (Original Motion Picture Soundtrack)';
+  const first = c.checkAvailability('USAAA0000001', 'Signal', 'Artist & Guest', {
+    duration_ms: 197718, track: { album_name: album },
+  });
+  const second = c.checkAvailability('USAAA0000002', 'Another Signal', 'Artist', {
+    duration_ms: 239189, track: { album_name: album },
+  });
+  assert.equal(first.track_id, '1');
+  assert.equal(second.track_id, '2');
+  assert.equal(queries.filter(([query]) => query === 'Collection').length, 1,
+    'the recovered album search remains shared between its tracks');
+  assert.ok(queries.every(([, limit]) => limit === 3));
+  assert.equal(c.checkAvailability('', 'Signal (Live)', 'Artist', {
+    duration_ms: 197718, track: { album_name: album },
+  }).available, false);
+  assert.equal(c.checkAvailability('', 'Signal', 'Different Singer', {
+    duration_ms: 197718, track: { album_name: album },
+  }).available, false);
+  assert.equal(c.checkAvailability('', 'Signal', 'Artist', {
+    duration_ms: 280000, track: { album_name: album },
+  }).available, false);
+});
+
+test('soundtrack recovery preserves edition names and does not search an empty title', () => {
+  for (const title of ['Collection (Deluxe)', 'Collection (Live)', '(Original Soundtrack)']) {
+    const c = runtime();
+    sources(c, () => []);
+    const queries = [];
+    c.searchAlbumsViaAPI = query => { queries.push(query); return []; };
+    assert.equal(c.checkAvailability('', 'Signal', 'Artist', {
+      track: { album_name: title },
+    }).available, false);
+    assert.deepEqual(queries, [title + ' Artist', title]);
+  }
+});
+
 test('unmatched or failed qualified album searches retain bounded title recovery', () => {
   for (const fails of [false, true]) {
     const c = runtime();
