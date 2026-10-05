@@ -14,6 +14,71 @@ function runtime() {
 }
 const track = (id, extra = {}) => ({ id, title: 'Signal', performer: { name: 'Artist' },
   isrc: 'USAAA0000001', duration: 180, ...extra });
+
+test('source album recovery precedes expensive hydration and reuses a cached release', () => {
+  const c = runtime();
+  const album = { id: 'ix7jv0x73q4sa', title: 'Race', tracks: { items: [
+    track('129598571', { title: 'Zara Zara Touch Me', isrc: 'INT100700315', duration: 285, performer: { name: 'Monali Thakur' } }),
+    track('129598572', { title: 'Zara Zara Touch Me (Asian Rnb Mix)', isrc: 'INT100700312', duration: 240, performer: { name: 'Monali Thakur' } }),
+    track('129598573', { title: 'Zara Zara Touch Me (Remix)', isrc: 'INT100700319', duration: 271, performer: { name: 'Monali Thakur' } }),
+  ] } };
+  const queries = [];
+  c.searchTracksViaAPI = query => { queries.push(query); return []; };
+  c.searchTracksViaAlbumSearch = () => assert.fail('deep track hydration must wait for the source album');
+  c.searchTracksViaStore = () => assert.fail('store hydration must wait for the source album');
+  c.searchAlbumsViaAPI = query => {
+    assert.equal(query, 'Race Pritam');
+    return [{ id: album.id }];
+  };
+  c.metadataCacheSet('album:' + album.id, album);
+  c.getMetadataJSON = () => assert.fail('the complete album is already cached');
+  const options = { duration_ms: 240000, track: { album_name: 'Race (Original Motion Picture Soundtrack)', album_artist: 'Pritam' } };
+  const title = 'Zara Zara Touch Me (Asian Rnb Mix)';
+  const artists = 'Monali Thakur, Earl Edgar & Pritam';
+  assert.equal(c.checkAvailability('INT100700312', title, artists, options).track_id, '129598572');
+  assert.equal(queries.length, 1, 'source album is checked after the first track query');
+  queries.length = 0;
+  assert.equal(c.checkAvailability('INT100700312', title, artists, options).track_id, '129598572');
+  assert.equal(queries.length, 0, 'cached release is checked before any track search');
+  assert.equal(c.qobuzTrackMatchesRequest(album.tracks.items[0], '', title, artists, 240000), false);
+  assert.equal(c.qobuzTrackMatchesRequest(album.tracks.items[2], '', title, artists, 240000), false);
+});
+
+test('availability skips repeated slow metadata attempts and restores manual retry policy', () => {
+  const c = runtime();
+  let signedCalls = 0;
+  c.session = { signedFetch() {
+    signedCalls++;
+    return { error: 'network timeout' };
+  } };
+  c.getPublicQobuzJSON = () => ({ tracks: { items: [track('1')] } });
+  c.waitBeforeRetry = () => assert.fail('availability must try a distinct source instead of retrying');
+  assert.equal(request(c).track_id, '1');
+  assert.equal(signedCalls, 1);
+  assert.equal(c.CONFIG.metadataAttempts, 3);
+  c.waitBeforeRetry = () => {};
+  assert.throws(() => c.getMetadataJSON('track/search', {}), /network timeout/);
+  assert.equal(signedCalls, 4, 'manual metadata calls retain all three attempts');
+});
+
+test('an expired runtime deadline does not issue public, album, or store requests', () => {
+  const c = runtime();
+  let signedCalls = 0;
+  c.session = { signedFetch() {
+    signedCalls++;
+    return { error: 'execution timeout exceeded' };
+  } };
+  c.getPublicQobuzJSON = () => assert.fail('the runtime deadline is terminal');
+  c.searchTracksViaAlbumSearch = () => assert.fail('the runtime deadline is terminal');
+  c.searchTracksViaStore = () => assert.fail('the runtime deadline is terminal');
+  const result = c.checkAvailability('USAAA0000001', 'Signal', 'Artist', {
+    duration_ms: 180000, track: { album_name: 'Collection' },
+  });
+  assert.equal(result.available, false);
+  assert.equal(result.reason, 'execution timeout exceeded');
+  assert.equal(signedCalls, 1);
+  assert.equal(c.CONFIG.metadataAttempts, 3);
+});
 const request = c => c.checkAvailability('USAAA0000001', 'Signal', 'Artist', { duration_ms: 180000 });
 function sources(c, api, album = () => [], store = () => []) {
   c.searchTracksViaAPI = api;
