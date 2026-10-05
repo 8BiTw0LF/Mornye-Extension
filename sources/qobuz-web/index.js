@@ -2061,6 +2061,8 @@ function extractTrackIDsFromStoreSearchHTML(html) {
   var ids = [];
   var seen = {};
   var match;
+  // Current storefront cart URLs encode slashes as numeric HTML entities.
+  html = String(html || "").replace(/&#(?:x0*2f|0*47);/gi, "/");
   STORE_TRACK_ID_REGEX.lastIndex = 0;
   while ((match = STORE_TRACK_ID_REGEX.exec(html)) !== null) {
     uniquePush(ids, match[1], seen);
@@ -2262,7 +2264,7 @@ function albumSearchTitle(value) {
   ).trim();
 }
 
-function findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs, albumName) {
+function findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs, albumName, albumArtistName) {
   var queries = [];
   var seen = {};
   uniquePush(queries, (String(trackName || "") + " " + String(artistName || "")).trim(), seen);
@@ -2272,7 +2274,7 @@ function findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs
   uniquePush(queries, String(trackName || "").trim(), seen);
   var best = null;
   var provisional = null;
-  var albumTitle = String(albumName || "").trim();
+  var albumTitle = albumSearchTitle(albumName) || String(albumName || "").trim();
   for (var i = 0; i < queries.length; i++) {
     if (ensureNotCancelled()) throw new Error("download cancelled");
     try {
@@ -2300,6 +2302,10 @@ function findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs
   // original request, including the version label and duration.
   if (albumTitle) {
     var albumQueries = [];
+    // Strip only soundtrack annotations before qualifying the query. A short
+    // title alone (e.g. Race) can bury the source release behind other albums.
+    var sourceAlbumArtist = String(albumArtistName || "").trim();
+    if (sourceAlbumArtist) albumQueries.push(albumTitle + " " + sourceAlbumArtist);
     var albumArtist = String(artistName || "").trim();
     if (albumArtist) {
       albumQueries.push(albumTitle + " " + albumArtist);
@@ -2307,10 +2313,6 @@ function findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs
       if (albumArtists.length > 1) albumQueries.push(albumTitle + " " + albumArtists[0]);
     }
     albumQueries.push(albumTitle);
-    // Catalogs can omit an Apple soundtrack annotation from the same album.
-    // Only broaden the search query; every recovered track is still verified.
-    var searchTitle = albumSearchTitle(albumTitle);
-    if (searchTitle && searchTitle !== albumTitle) albumQueries.push(searchTitle);
     for (var queryIndex = 0; queryIndex < albumQueries.length; queryIndex++) {
       if (ensureNotCancelled()) throw new Error("download cancelled");
       try {
@@ -2832,7 +2834,7 @@ function checkAvailability(isrc, trackName, artistName, options) {
     }
 
     var best = findVerifiedSearchTrack(isrc, trackName, artistName, expectedDurationMs,
-      options.track && options.track.album_name);
+      options.track && options.track.album_name, options.track && options.track.album_artist);
     if (!best || !best.id) {
       return {
         available: false,

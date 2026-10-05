@@ -30,6 +30,84 @@ test('download metadata includes duration for host matching across release editi
   assert.equal(c.applyTrackMetadataToDownloadResult({}, {}).duration_ms, 0);
 });
 
+test('store recovery reads plain and HTML-encoded cart links in document order', () => {
+  const c = runtime();
+  const html = '<button data-url="&#x2F;v4&#x2F;ajax&#x2F;popin-add-cart&#x2F;track&#x2F;12"></button>' +
+    '<a href="/v4/ajax/popin-add-cart/track/13"></a>' +
+    '<button data-url="&#00047;v4&#47;ajax&#47;popin-add-cart&#47;track&#47;12"></button>' +
+    '<button data-url="&#X002F;v4&#X2F;ajax&#X2F;popin-add-cart&#X2F;track&#X2F;14"></button>' +
+    '<a href="/v4/ajax/popin-add-cart/album/99"></a>';
+  assert.deepEqual(Array.from(c.extractTrackIDsFromStoreSearchHTML(html)), ['12', '13', '14']);
+  c.fetchText = () => html;
+  const hydrated = [];
+  c.fetchTrackRaw = id => { hydrated.push(id); return track(id); };
+  assert.equal(c.searchTracksViaStore('Signal', 2).length, 2);
+  assert.deepEqual(hydrated, ['12', '13']);
+});
+
+test('partial album recovery hydrates encoded storefront links without duplicating tracks', () => {
+  const c = runtime();
+  c.fetchText = () => '<button data-url="&#x2F;v4&#x2F;ajax&#x2F;popin-add-cart&#x2F;track&#x2F;1"></button>' +
+    '<button data-url="&#x2F;v4&#x2F;ajax&#x2F;popin-add-cart&#x2F;track&#x2F;2"></button>';
+  c.getPublicQobuzJSON = (resource, params) => {
+    assert.equal(resource, 'widget/getTrackById');
+    assert.equal(params.track_id, '2');
+    return track('2', { track_number: 2 });
+  };
+  const album = c.completePublicAlbumTracks({
+    id: 'album', tracks_count: 2, tracks: { items: [track('1', { track_number: 1 })] },
+  });
+  assert.equal(c.albumTracksComplete(album), true);
+  assert.deepEqual(Array.from(album.tracks.items, t => t.id), ['1', '2']);
+});
+
+test('Race recordings accept Apple artist punctuation and retain recording identity', () => {
+  const c = runtime();
+  const recordings = [
+    ['129598562', 'Mujh Pe Toh Jadoo (Remix)', 'INT100700318', 'Taz Stereo Nation',
+      'TAZ-Stereo Nation, Sunidhi Chauhan, Apache Indian & Pritam', 261, 261322],
+    ['129598568', 'Race Is On My Mind (Remix)', 'INT100700322', 'Sunidhi Chauhan',
+      'Sunidhi Chauhan, Neeraj Shridhar & Pritam', 268, 268760],
+    ['129598572', 'Zara Zara Touch Me (Asian Rnb Mix)', 'INT100700312', 'Monali Thakur',
+      'Monali Thakur, Earl Edgar & Pritam', 240, 240992],
+  ];
+  for (const [id, title, isrc, performer, artists, duration, durationMs] of recordings) {
+    const candidate = track(id, { title, isrc, performer: { name: performer }, duration });
+    assert.equal(c.qobuzTrackMatchesRequest(candidate, isrc, title, artists, durationMs), true);
+    assert.equal(c.qobuzTrackMatchesRequest(candidate, '', title, artists, durationMs), true);
+    assert.equal(c.qobuzTrackMatchesRequest(candidate, '', title + ' (Live)', artists, durationMs), false);
+    assert.equal(c.qobuzTrackMatchesRequest(candidate, '', title, 'Unrelated Artist', durationMs), false);
+  }
+  assert.equal(c.artistNamesMatch('TAZ-Stereo Nation', 'Taz Stereo Nation'), true);
+  assert.equal(c.artistNamesMatch('Taz Stereo Nation', 'TAZ-Stereo Nation'), true);
+});
+
+test('short soundtrack titles retain artist qualification before searching ambiguous albums', () => {
+  for (const albumArtist of ['', 'Pritam']) {
+    const c = runtime();
+    sources(c, () => []);
+    const queries = [];
+    c.searchAlbumsViaAPI = query => {
+      queries.push(query);
+      return query === (albumArtist ? 'Race Pritam' : 'Race taz stereo nation')
+        ? [{ id: 'race' }] : [];
+    };
+    c.fetchAlbumRaw = id => ({ id, title: 'Race', tracks: { items: [track('129598562', {
+      title: 'Mujh Pe Toh Jadoo (Remix)', isrc: 'INT100700318',
+      performer: { name: 'Taz Stereo Nation' }, duration: 261,
+    })] } });
+    const result = c.checkAvailability('INT100700318', 'Mujh Pe Toh Jadoo (Remix)',
+      'TAZ-Stereo Nation, Sunidhi Chauhan, Apache Indian & Pritam', {
+        duration_ms: 261322,
+        track: { album_name: 'Race (Original Motion Picture Soundtrack)', album_artist: albumArtist },
+      });
+    assert.equal(result.track_id, '129598562');
+    if (albumArtist) assert.equal(queries.at(-1), 'Race Pritam');
+    else assert.equal(queries.at(-1), 'Race taz stereo nation');
+    assert.ok(!queries.includes('Race'), 'qualified recovery finishes before the ambiguous title query');
+  }
+});
+
 test('exact ISRC outranks a name match and prefers a matching catalog duration', () => {
   const c = runtime();
   const name = track('1', { isrc: 'different', maximum_bit_depth: 24 });
