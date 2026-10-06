@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-05T00:00:00Z",
+  "updated_at": "2026-10-06T00:00:00Z",
   "extensions": [
     {
       "id": "spotify-web",
@@ -160,6 +160,85 @@
       "downloads": 0,
       "updated_at": "2026-09-20T00:00:00Z",
       "min_app_version": "4.9.0"
+    },
+    {
+      "id": "bugs-music",
+      "name": "bugs-music",
+      "display_name": "Bugs Music",
+      "version": "1.6.2",
+      "description": "Bugs Music metadata provider with accurate track and album details, artist catalogs, TOP100, genre charts, and URL imports.",
+      "download_url": "https://raw.githubusercontent.com/spotiflacapp/SpotiFLAC-Extension/main/extensions/bugs-music.sflx",
+      "sha256": "72bc4ff38856568223da676374a95b5f79cc8a74569edabc111c82da3e215b1e",
+      "category": "integration",
+      "tags": [
+        "bugs",
+        "korean",
+        "metadata",
+        "search",
+        "homefeed"
+      ],
+      "downloads": 0,
+      "updated_at": "2026-10-06T00:00:00Z",
+      "min_app_version": "3.0.1"
+    },
+    {
+      "id": "melon-music",
+      "name": "melon-music",
+      "display_name": "Melon Music",
+      "version": "1.2.4",
+      "description": "Melon Music metadata provider with song search, album and artist catalogs, DJ playlists, separate TOP100 and HOT100 charts, and URL imports.",
+      "download_url": "https://raw.githubusercontent.com/spotiflacapp/SpotiFLAC-Extension/main/extensions/melon-music.sflx",
+      "sha256": "716ba7390e0e0c5ae1db80cd57bb56829c82b769d715d0538de1ec15ee6c4fc1",
+      "category": "integration",
+      "tags": [
+        "melon",
+        "korean",
+        "metadata",
+        "search",
+        "homefeed",
+        "playlist"
+      ],
+      "downloads": 0,
+      "updated_at": "2026-10-06T00:00:00Z",
+      "min_app_version": "3.0.1"
+    },
+    {
+      "id": "genie-music",
+      "name": "genie-music",
+      "display_name": "Genie Music",
+      "version": "1.0.29",
+      "description": "Genie Music metadata provider with track details, albums, paginated artist catalogs, TOP200, genre charts, and URL imports.",
+      "download_url": "https://raw.githubusercontent.com/spotiflacapp/SpotiFLAC-Extension/main/extensions/genie-music.sflx",
+      "sha256": "d337129bcd37686982ea44d22189bebcd7ceca99fb1b30a141114b32e5fd8f5f",
+      "category": "integration",
+      "tags": [
+        "genie",
+        "korean",
+        "metadata",
+        "search",
+        "homefeed"
+      ],
+      "downloads": 0,
+      "updated_at": "2026-10-06T00:00:00Z",
+      "min_app_version": "3.0.1"
+    },
+    {
+      "id": "jiosaavn",
+      "name": "jiosaavn",
+      "display_name": "JioSaavn",
+      "version": "1.0.1",
+      "description": "JioSaavn public song, album, and artist metadata provider with filtered search, artwork, and URL imports.",
+      "download_url": "https://raw.githubusercontent.com/spotiflacapp/SpotiFLAC-Extension/main/extensions/jiosaavn.sflx",
+      "sha256": "8ac274ab8f787de9aea0c2f5b99d0bef48f648511ca879dc99771922c888dc33",
+      "category": "integration",
+      "tags": [
+        "jiosaavn",
+        "metadata",
+        "search"
+      ],
+      "downloads": 0,
+      "updated_at": "2026-10-06T00:00:00Z",
+      "min_app_version": "4.2.3"
     }
   ]
 }
