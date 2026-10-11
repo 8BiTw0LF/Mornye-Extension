@@ -15,9 +15,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def package(source):
+    manifest = json.loads((source / "manifest.json").read_text())
+    filenames = ["manifest.json", "index.js"]
+    icon = manifest.get("icon")
+    if icon:
+        if not isinstance(icon, str) or Path(icon).name != icon or icon in (".", ".."):
+            raise ValueError("Bundled icons must be a filename inside the provider source directory")
+        if icon not in filenames:
+            filenames.append(icon)
     buffer = io.BytesIO()
     with ZipFile(buffer, "w") as archive:
-        for filename in ("manifest.json", "index.js"):
+        for filename in filenames:
             entry = ZipInfo(filename, date_time=(2020, 1, 1, 0, 0, 0))
             entry.create_system = 3
             entry.external_attr = 0o100644 << 16

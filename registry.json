@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-06T00:00:00Z",
+  "updated_at": "2026-10-11T00:00:00Z",
   "extensions": [
     {
       "id": "spotify-web",
@@ -226,19 +226,22 @@
       "id": "jiosaavn",
       "name": "jiosaavn",
       "display_name": "JioSaavn",
-      "version": "1.0.1",
-      "description": "JioSaavn public song, album, and artist metadata provider with filtered search, artwork, and URL imports.",
+      "version": "1.0.6",
+      "description": "Search and download JioSaavn AAC tracks, with album, playlist, artist metadata and a home feed.",
       "download_url": "https://raw.githubusercontent.com/spotiflacapp/SpotiFLAC-Extension/main/extensions/jiosaavn.sflx",
-      "sha256": "8ac274ab8f787de9aea0c2f5b99d0bef48f648511ca879dc99771922c888dc33",
-      "category": "integration",
+      "sha256": "440f63c3bc6e5473d458c84a650fabcb4b9f62c38556a1c2cb2e5fdbed682c9c",
+      "icon_url": "https://raw.githubusercontent.com/spotiflacapp/SpotiFLAC-Extension/main/icons/jiosaavn.png",
+      "category": "download",
       "tags": [
         "jiosaavn",
         "metadata",
-        "search"
+        "search",
+        "homefeed",
+        "download"
       ],
       "downloads": 0,
-      "updated_at": "2026-10-06T00:00:00Z",
-      "min_app_version": "4.2.3"
+      "updated_at": "2026-10-11T00:00:00Z",
+      "min_app_version": "4.9.5"
     }
   ]
 }
