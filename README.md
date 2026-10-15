@@ -18,7 +18,8 @@
 
 ## Developing the bundled providers
 
-Amazon, Apple Music, SoundCloud, Tidal, Qobuz, and JioSaavn have reviewable source in `sources/<provider>/` and
+Amazon, Apple Music, SoundCloud, Tidal, Qobuz, JioSaavn, Bugs Music, Melon, and Genie
+have reviewable source in `sources/<provider>/` and
 offline regression tests in `tests/`. Edit the source, bump its manifest
 version, and run:
 
@@ -36,6 +37,11 @@ Pass provider directory names to rebuild a subset, for example
 
 Commit source, tests, packages, and registry changes together. Other providers
 remain package-only until their source is added to this layout.
+
+Bugs Music, Melon, and Genie provide catalog metadata and URL imports. Their
+enrichment reads their own track details; it does not call the deprecated
+Songlink public API. Audio downloads and cross-service matching remain the
+responsibility of the app's configured download providers.
 
 ## Review Process
 
