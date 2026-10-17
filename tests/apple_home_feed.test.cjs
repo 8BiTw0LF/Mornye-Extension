@@ -75,11 +75,11 @@ test('public New feed keeps hero first and maps supported music without extra re
 
 test('storefront changes fetch an independent feed without authentication', () => {
   const { registered, calls } = runtime(page([{ items: [item('album', '123')] }]));
-  registered.initialize({ storefront: 'id' });
+  registered.initialize({ storefront: 'jp' });
   assert.equal(registered.getHomeFeed().success, true);
   registered.initialize({ storefront: 'gb' });
   registered.getHomeFeed();
-  assert.deepEqual(calls, ['https://music.apple.com/id/new', 'https://music.apple.com/gb/new']);
+  assert.deepEqual(calls, ['https://music.apple.com/jp/new', 'https://music.apple.com/gb/new']);
 });
 
 test('explicit flags reach songs, albums and matching heroes without treating unknown as clean', () => {

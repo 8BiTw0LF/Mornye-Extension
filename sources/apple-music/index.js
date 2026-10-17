@@ -1,6 +1,6 @@
 // ============================================
 // Apple Music Extension for SpotiFLAC Mobile
-// Version: 1.4.12
+// Version: 1.4.13
 //
 // Uses Apple Music's public catalog API (amp-api)
 // to fetch metadata including ISRC. No login required.
@@ -44,10 +44,8 @@ function initialize(config) {
   // flat form and a legacy { settings: {...} } wrapper for safety.
   var s = (config && config.settings) ? config.settings : (config || {});
   if (s) {
-    var sf = (s.storefront || "").trim().toLowerCase();
-    if (sf) {
-      state.storefront = sf;
-    }
+    var sf = String(s.storefront || "us").trim().toLowerCase();
+    state.storefront = /^[a-z]{2}$/.test(sf) ? sf : "us";
     state.mediaUserToken = (s.mediaUserToken || "").trim();
     state.lyricsTranslation = (s.lyricsTranslation || "").trim().toLowerCase();
     state.lyricsPronunciation = (s.lyricsPronunciation || "").trim().toLowerCase();

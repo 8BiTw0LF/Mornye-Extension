@@ -1,7 +1,7 @@
 {
   "name": "apple-music",
   "displayName": "Apple Music",
-  "version": "1.4.12",
+  "version": "1.4.13",
   "description": "Apple Music metadata and lyrics provider for SpotiFLAC Mobile with guarded track matching, bounded caching, resilient requests, and complete release metadata.",
   "homepage": "https://github.com/zarzet/SpotiFLAC-Mobile",
   "type": [
@@ -12,6 +12,7 @@
   "skipMetadataEnrichment": false,
   "capabilities": {
     "homeFeed": true,
+    "homeFeedRegionSetting": "storefront",
     "browseCategories": false,
     "shareUrlTemplates": {
       "track": "https://music.apple.com/us/song/{id}",
@@ -69,7 +70,8 @@
       "label": "Storefront / Region",
       "type": "string",
       "default": "us",
-      "description": "Apple Music storefront code (e.g. us, gb, jp, id). Affects search results and catalog availability."
+      "options": ["us", "gb", "jp", "id", "kr", "fr", "de", "it", "es", "in", "br", "mx", "au", "ca"],
+      "description": "Country used for Home recommendations, search, and catalog availability. No VPN is required."
     },
     {
       "key": "mediaUserToken",

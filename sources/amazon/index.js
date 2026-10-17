@@ -1,5 +1,5 @@
 // Amazon Music Metadata & Download Provider for SpotiFLAC
-// v2.3.11 - Resolves cross-catalog links through Songlink with CSRF session refresh.
+// v2.3.12 - Regional Home feeds with canonical catalog resolution for downloads.
 // Uses reverse-engineered Amazon Music web API (skill.music.a2z.com).
 
 var CONFIG = {
@@ -311,6 +311,21 @@ var _currentContext = {
 
 var _resourceContexts = new Map();
 var _resourceHints = new Map();
+var _homeCountry = "US";
+
+function createHomeFeedContext() {
+  var domains = {
+    US: "com", GB: "co.uk", JP: "co.jp", DE: "de", FR: "fr",
+    IT: "it", ES: "es", IN: "in", BR: "com.br", MX: "com.mx", AU: "com.au"
+  };
+  var host = "music.amazon." + (domains[_homeCountry] || domains.US);
+  return {
+    musicBaseURL: "https://" + host,
+    host: host,
+    timeZone: guessTimeZone(),
+    currency: defaultCurrencyForHost(host)
+  };
+}
 
 function boundedMapGet(map, key) {
   if (!map.has(key)) return null;
@@ -3681,7 +3696,8 @@ function formatHomeFeedData(data) {
 
       // Remember context for later resource fetching
       if (itemType === "track" || itemType === "album") {
-        rememberResourceContext(itemType === "track" ? "track" : "album", itemId, _currentContext);
+        rememberResourceContext(itemType === "track" ? "track" : "album", itemId,
+          createAmazonContext(CONFIG.musicBaseURL));
       }
     }
 
@@ -3703,11 +3719,15 @@ function formatHomeFeedData(data) {
 }
 
 function getHomeFeed() {
+  var previousContext = _currentContext;
+  _currentContext = createHomeFeedContext();
   try {
     return fetchHomeFeed();
   } catch (e) {
     L("error", "[Amazon] getHomeFeed failed: " + String(e));
     return { success: false, error: String(e), sections: [] };
+  } finally {
+    _currentContext = previousContext;
   }
 }
 
@@ -3721,8 +3741,10 @@ function completeGrant() {
 }
 
 registerExtension({
-  initialize: function() {
-    L("info", "[Amazon] Extension v2.3.11 init");
+  initialize: function(config) {
+    var settings = config && config.settings ? config.settings : (config || {});
+    _homeCountry = String(settings.homeCountry || "US").trim().toUpperCase();
+    L("info", "[Amazon] Extension v2.3.12 init");
     initSession();
     return true;
   },
@@ -3806,7 +3828,7 @@ registerExtension({
   },
 
   download: function(trackID, quality, outputPath, onProgress, options) {
-    L("info", "[Amazon] download called:", trackID, quality, "extension: 2.3.11");
+    L("info", "[Amazon] download called:", trackID, quality, "extension: 2.3.12");
 
     // trackID bisa berupa:
     // - ASIN langsung (dari handleUrl/getAlbum flow, atau checkAvailability)

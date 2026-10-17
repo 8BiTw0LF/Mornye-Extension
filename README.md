@@ -18,8 +18,8 @@
 
 ## Developing the bundled providers
 
-Amazon, Apple Music, SoundCloud, Tidal, Qobuz, JioSaavn, Bugs Music, Melon, and Genie
-have reviewable source in `sources/<provider>/` and
+Amazon, Apple Music, YouTube Music, SoundCloud, Tidal, Qobuz, JioSaavn, Bugs Music,
+Melon, and Genie have reviewable source in `sources/<provider>/` and
 offline regression tests in `tests/`. Edit the source, bump its manifest
 version, and run:
 
