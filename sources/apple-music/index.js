@@ -1,6 +1,6 @@
 // ============================================
-// Apple Music Extension for SpotiFLAC Mobile
-// Version: 1.4.13
+// Apple Music Extension for Mornye
+// Version: 1.4.14
 //
 // Uses Apple Music's public catalog API (amp-api)
 // to fetch metadata including ISRC. No login required.

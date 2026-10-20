@@ -10,6 +10,6 @@ for (const entry of fs.readdirSync(sources, { withFileTypes: true })) {
   if (!manifest.signedSession) continue;
   test(`${manifest.name} verification returns through the host application's callback`, () => {
     assert.equal(manifest.signedSession.callbackUrl, undefined,
-      'A fixed callback can open a different app when Mornye and SpotiFLAC are both installed');
+      'A fixed callback can open a different app when Mornye and an older host build are both installed');
   });
 }

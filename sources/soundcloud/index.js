@@ -1,6 +1,6 @@
 // ============================================
-// SoundCloud Extension for SpotiFLAC
-// Version: 1.0.10
+// SoundCloud Extension for Mornye
+// Version: 1.0.11
 //
 // Uses SoundCloud's api-v2 metadata, AAC HLS and legacy progressive streams.
 //

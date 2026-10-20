@@ -1,4 +1,4 @@
-// Amazon Music Metadata & Download Provider for SpotiFLAC
+// Amazon Music Metadata & Download Provider for Mornye
 // v2.3.12 - Regional Home feeds with canonical catalog resolution for downloads.
 // Uses reverse-engineered Amazon Music web API (skill.music.a2z.com).
 

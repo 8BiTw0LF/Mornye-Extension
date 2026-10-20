@@ -56,7 +56,7 @@ function runtime(respond = () => ({ songs: [song()] })) {
 }
 
 test('manifest declares lossy quality kinds, home feed, and its bundled icon', () => {
-  assert.equal(manifest.version, '1.0.6');
+  assert.equal(manifest.version, '1.0.7');
   assert.equal(manifest.capabilities.homeFeed, true);
   assert.equal(manifest.skipMetadataEnrichment, undefined);
   assert.ok(manifest.requiredRuntimeFeatures.includes('preparedContext@1'));

@@ -1506,7 +1506,7 @@ function matchingArtists(expected, actual) {
 
 // ---- src/spotiflac.js ----
 // ============================================================
-// Register extension with SpotiFLAC
+// Register extension with Mornye
 // ============================================================
 
 registerExtension({

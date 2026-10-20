@@ -867,7 +867,7 @@ function buildYouTubeChallengeSolver(playerJS) {
 
   var injection =
     ';(function(){var root=typeof globalThis!=="undefined"?globalThis:this;' +
-    "root.__spotiflacYtChallengeSolver=function(sig,n){var result={};" +
+    "root.__mornyeYtChallengeSolver=function(sig,n){var result={};" +
     "var url=" +
     transformFn +
     '("https://www.youtube.com/watch?v=yt-dlp-wins","s",sig?encodeURIComponent(sig):void 0);' +
@@ -929,7 +929,7 @@ function buildYouTubeChallengeSolver(playerJS) {
     var script =
       text.substring(0, markerIndex) + injection + text.substring(markerIndex);
     eval(script);
-    var solver = root.__spotiflacYtChallengeSolver;
+    var solver = root.__mornyeYtChallengeSolver;
     return typeof solver === "function" ? solver : null;
   } catch (e) {
     L(
@@ -940,9 +940,9 @@ function buildYouTubeChallengeSolver(playerJS) {
     return null;
   } finally {
     try {
-      delete root.__spotiflacYtChallengeSolver;
+      delete root.__mornyeYtChallengeSolver;
     } catch (e2) {
-      root.__spotiflacYtChallengeSolver = undefined;
+      root.__mornyeYtChallengeSolver = undefined;
     }
     for (var key in previous) {
       if (!Object.prototype.hasOwnProperty.call(previous, key)) continue;
@@ -2958,8 +2958,8 @@ function sanitizeTrackBeforeReturn(t) {
 
   var sanitized = {
     id: id,
-    name: title, // SpotiFLAC expects 'name' not 'title'
-    artists: artist, // SpotiFLAC expects 'artists' not 'artist'
+    name: title, // Mornye expects 'name' not 'title'
+    artists: artist, // Mornye expects 'artists' not 'artist'
     album_name: t.album ? String(t.album).trim() : "",
     album_artist: String(t.album_artist || "").trim(),
     artist_id: String(t.artist_id || "").trim(),
@@ -2974,7 +2974,7 @@ function sanitizeTrackBeforeReturn(t) {
       t.external_links || {},
     ),
     duration_ms: (Number(t.duration || 0) || 0) * 1000, // Convert seconds to ms
-    cover_url: thumb, // SpotiFLAC expects 'cover_url' not 'thumbnail'
+    cover_url: thumb, // Mornye expects 'cover_url' not 'thumbnail'
     track_number: Number(t.track_number || 0) || 0,
     total_tracks: Number(t.total_tracks || 0) || 0,
     disc_number: Number(t.disc_number || 0) || 0,

@@ -18,9 +18,9 @@ _(Must be a direct link to the image you uploaded to the `icons/` folder in this
 
 **Checklist:**
 
-- [ ] I have added the `.spotiflac-ext` file to the `extensions/` folder.
+- [ ] I have added the `.sflx` package to the `extensions/` folder.
 - [ ] I have added the icon image (PNG/JPG, 512x512) to the `icons/` folder.
-- [ ] I have added the entry to `registry.json` (pointing `iconUrl` to the file in `icons/`).
+- [ ] I have added the entry to `registry.json` (pointing `icon_url` to the file in `icons/`).
 - [ ] I have tested the extension and it works as expected.
 - [ ] This extension contains no malicious code.
 

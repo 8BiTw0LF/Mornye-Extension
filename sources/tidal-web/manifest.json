@@ -1,8 +1,8 @@
 {
   "name": "tidal-web",
   "displayName": "Tidal",
-  "version": "1.2.8",
-  "description": "TIDAL metadata and search provider for SpotiFLAC Mobile using TIDAL public web endpoints.",
+  "version": "1.2.9",
+  "description": "TIDAL metadata and search provider for Mornye using TIDAL public web endpoints.",
   "homepage": "https://github.com/zarzet/SpotiFLAC-Mobile",
   "type": [
     "metadata_provider",

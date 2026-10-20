@@ -1,12 +1,12 @@
-# SpotiFLAC Extension Store
+# Mornye Extension Store
 
 ## Submit Your Extension
 
 1. Fork this repository
-2. Add your `.spotiflac-ext` file to `extensions/` folder
+2. Add your `.sflx` package to the `extensions/` folder
 3. Add your icon image (PNG/JPG, 512x512 recommended) to `icons/` folder
 4. Add entry to `registry.json`
-   - Ensure `iconUrl` points to the raw file in the repository (e.g. `https://raw.githubusercontent.com/zarzet/SpotiFLAC-Extension/main/icons/your-icon.png`)
+   - Ensure `icon_url` points to the raw file in the repository (e.g. `https://raw.githubusercontent.com/zarzet/SpotiFLAC-Extension/main/icons/your-icon.png`)
 5. Create Pull Request
 
 ## Requirements
@@ -39,7 +39,7 @@ Commit source, tests, packages, and registry changes together. Other providers
 remain package-only until their source is added to this layout.
 
 Signed-session providers omit `callbackUrl` so the host application supplies
-its own session-grant callback. This lets Mornye and older SpotiFLAC hosts
+its own session-grant callback. This lets Mornye and older host versions
 return to the application that started verification. Package-only fixes keep
 the gateway's `appVersion` unchanged to preserve its existing session scope.
 
