@@ -18,7 +18,7 @@
 
 ## Developing the bundled providers
 
-Amazon, Apple Music, YouTube Music, SoundCloud, Tidal, Qobuz, JioSaavn, Bugs Music,
+Amazon, Apple Music, YouTube Music, SoundCloud, Tidal, Qobuz, Deezer, JioSaavn, Bugs Music,
 Melon, and Genie have reviewable source in `sources/<provider>/` and
 offline regression tests in `tests/`. Edit the source, bump its manifest
 version, and run:
@@ -37,6 +37,11 @@ Pass provider directory names to rebuild a subset, for example
 
 Commit source, tests, packages, and registry changes together. Other providers
 remain package-only until their source is added to this layout.
+
+Signed-session providers omit `callbackUrl` so the host application supplies
+its own session-grant callback. This lets Mornye and older SpotiFLAC hosts
+return to the application that started verification. Package-only fixes keep
+the gateway's `appVersion` unchanged to preserve its existing session scope.
 
 Bugs Music, Melon, and Genie provide catalog metadata and URL imports. Their
 enrichment reads their own track details; it does not call the deprecated
