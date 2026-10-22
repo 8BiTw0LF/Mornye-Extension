@@ -17,20 +17,21 @@ ROOT = Path(__file__).resolve().parents[1]
 def package(source):
     manifest = json.loads((source / "manifest.json").read_text())
     filenames = ["manifest.json", "index.js"]
+    licenses = ["LICENSE", "COPYING", "NOTICE"]
     icon = manifest.get("icon")
     if icon:
-        if not isinstance(icon, str) or Path(icon).name != icon or icon in (".", ".."):
+        if not isinstance(icon, str) or Path(icon).name != icon or icon in (".", "..", *licenses):
             raise ValueError("Bundled icons must be a filename inside the provider source directory")
         if icon not in filenames:
             filenames.append(icon)
     buffer = io.BytesIO()
     with ZipFile(buffer, "w") as archive:
-        for filename in filenames:
+        for filename in filenames + licenses:
             entry = ZipInfo(filename, date_time=(2020, 1, 1, 0, 0, 0))
             entry.create_system = 3
             entry.external_attr = 0o100644 << 16
             archive.writestr(
-                entry, (source / filename).read_bytes(),
+                entry, ((ROOT if filename in licenses else source) / filename).read_bytes(),
                 compress_type=ZIP_DEFLATED, compresslevel=9,
             )
     return buffer.getvalue()
