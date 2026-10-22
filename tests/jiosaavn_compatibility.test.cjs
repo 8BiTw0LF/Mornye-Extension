@@ -56,7 +56,7 @@ function runtime(respond = () => ({ songs: [song()] })) {
 }
 
 test('manifest declares lossy quality kinds, home feed, and its bundled icon', () => {
-  assert.equal(manifest.version, '1.0.7');
+  assert.equal(manifest.version, '1.0.8');
   assert.equal(manifest.capabilities.homeFeed, true);
   assert.equal(manifest.skipMetadataEnrichment, undefined);
   assert.ok(manifest.requiredRuntimeFeatures.includes('preparedContext@1'));
@@ -165,6 +165,79 @@ test('playlists fetch all pages and do not overwrite album track numbers', () =>
   assert.equal(result.tracks[100].track_number, 7);
   assert.equal(result.tracks[100].total_tracks, 12);
   assert.deepEqual(calls.requests.map(p => p.get('p')), ['1', '2']);
+});
+
+test('community playlist URLs match the manifest and resolve the playlist token', () => {
+  const url = 'https://www.jiosaavn.com/s/playlist/example-user/shared-mix/playlist-token';
+  assert.ok(manifest.urlHandler.patterns.some(pattern => url.includes(pattern)));
+  const { extension, calls } = runtime(() => ({
+    id: '123', title: 'Shared Mix', list_count: '1', list: [song()],
+  }));
+  const result = extension.handleUrl(url);
+  assert.equal(result.success, true);
+  assert.equal(result.type, 'playlist');
+  assert.equal(result.tracks.length, 1);
+  assert.equal(calls.requests[0].get('__call'), 'webapi.get');
+  assert.equal(calls.requests[0].get('token'), 'playlist-token');
+});
+
+for (const id of ['123', 'playlist-token']) {
+  for (const total of [0, 99, 100, 101, 200, 300, 301]) {
+    test(`playlist pagination stops at ${total} entries for ${id}`, () => {
+      const { extension, calls } = runtime((call, p) => {
+        const offset = (Number(p.get('p')) - 1) * 100;
+        const count = Math.max(0, Math.min(100, total - offset));
+        return {
+          id: '123', title: 'Playlist', list_count: id === '123' ? total : String(total),
+          list: offset >= total && offset > 0 ? '' : Array.from({ length: count }, (_, i) =>
+            song({ id: 'id' + (offset + i) })),
+        };
+      });
+      const result = extension.getPlaylist(id);
+      assert.equal(result.tracks.length, total);
+      assert.equal(result.total_tracks, total);
+      assert.deepEqual(calls.requests.map(p => p.get('p')),
+        Array.from({ length: Math.max(1, Math.ceil(total / 100)) }, (_, i) => String(i + 1)));
+      assert.ok(calls.requests.every(p => p.get('__call') ===
+        (id === '123' ? 'playlist.getDetails' : 'webapi.get')));
+    });
+  }
+}
+
+test('playlist pagination falls back to page sizes when the total is unavailable or invalid', () => {
+  for (const total of [undefined, null, '', 'invalid', -1, 100.5]) {
+    const { extension, calls } = runtime((call, p) => ({
+      id: '123', title: 'Playlist', list_count: total,
+      list: Array.from({ length: p.get('p') === '1' ? 100 : 2 }, (_, i) =>
+        song({ id: 'id' + ((Number(p.get('p')) - 1) * 100 + i) })),
+    }));
+    assert.equal(extension.getPlaylist('123').tracks.length, 102);
+    assert.deepEqual(calls.requests.map(p => p.get('p')), ['1', '2']);
+  }
+});
+
+test('duplicate playlist entries count toward pagination before deduplication', () => {
+  const { extension, calls } = runtime((call, p) => {
+    const page = Number(p.get('p'));
+    return {
+      id: '123', title: 'Playlist', list_count: '200',
+      list: page > 2 ? '' : Array.from({ length: 100 }, (_, i) =>
+        song({ id: 'id' + (i === 0 ? 0 : (page - 1) * 100 + i) })),
+    };
+  });
+  assert.equal(extension.getPlaylist('123').tracks.length, 199);
+  assert.deepEqual(calls.requests.map(p => p.get('p')), ['1', '2']);
+});
+
+test('incomplete playlist pages fail when the advertised total has not been reached', () => {
+  for (const list of ['', [], [song({ id: 'last001' })]]) {
+    const { extension } = runtime((call, p) => ({
+      id: '123', title: 'Playlist', list_count: '300',
+      list: p.get('p') === '1'
+        ? Array.from({ length: 100 }, (_, i) => song({ id: 'id' + i })) : list,
+    }));
+    assert.throws(() => extension.getPlaylist('123'), /playlist/);
+  }
 });
 
 test('failed or repeated playlist pages report failure rather than silent truncation', () => {

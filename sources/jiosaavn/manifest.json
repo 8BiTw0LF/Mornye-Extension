@@ -1,7 +1,7 @@
 {
   "name": "jiosaavn",
   "displayName": "JioSaavn",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Search and download JioSaavn AAC tracks, browse albums, playlists, artists, and the home feed.",
   "author": "HemanthJabalpuri; Mornye compatibility fixes",
   "homepage": "https://github.com/HemanthJabalpuri/spotiflac-jiosaavn-extension",
@@ -34,7 +34,7 @@
   },
   "urlHandler": {
     "enabled": true,
-    "patterns": ["jiosaavn.com/song/", "jiosaavn.com/album/", "jiosaavn.com/artist/", "jiosaavn.com/playlist/", "jiosaavn.com/featured/"]
+    "patterns": ["jiosaavn.com/song/", "jiosaavn.com/album/", "jiosaavn.com/artist/", "jiosaavn.com/playlist/", "jiosaavn.com/s/playlist/", "jiosaavn.com/featured/"]
   },
   "settings": [
     {"key": "lang", "label": "Languages", "type": "string", "default": "english", "description": "Comma-separated languages"},

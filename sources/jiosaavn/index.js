@@ -185,14 +185,19 @@ function getCollection(type, token) {
         var rows = result.list.slice();
         var seen = {};
         rows.forEach(function(row) { seen[String(row.id)] = true; });
+        var total = Number(result.list_count);
+        if (!Number.isSafeInteger(total) || total < rows.length) total = 0;
+        // Count fetched entries before deduplication because playlists can repeat songs.
+        var fetched = rows.length;
         var batchSize = rows.length;
-        for (var page = 2; batchSize >= 100; page++) {
+        for (var page = 2; batchSize >= 100 && (!total || fetched < total); page++) {
             if (page > 100) throw new Error('JioSaavn playlist exceeds the paging limit');
             var next = byId
                 ? callAPI('playlist.getDetails', { listid: id, p: page, n: 100 })
                 : callAPI('webapi.get', { token: token, type: type, includeMetaTags: 0, p: page, n: 100 });
             if (!next || !Array.isArray(next.list)) throw new Error('Could not load JioSaavn playlist page ' + page);
             batchSize = next.list.length;
+            fetched += batchSize;
             var added = 0;
             next.list.forEach(function(row) {
                 if (!seen[String(row.id)]) {
@@ -203,6 +208,7 @@ function getCollection(type, token) {
             });
             if (batchSize && !added) throw new Error('JioSaavn returned a repeated playlist page');
         }
+        if (total && fetched < total) throw new Error('Could not load all JioSaavn playlist tracks');
         result.list = rows;
     }
     log.debug('[getCollection] Found ' + type + ': ' + (result.title || 'untitled'));
